@@ -1,0 +1,1760 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>美签通 · 美国签证通过率评估</title>
+<style>
+  :root {
+    --primary: #1a3a6b;
+    --primary-light: #2a5ab0;
+    --accent: #c8a84b;
+    --accent-light: #f0d070;
+    --bg: #f4f6fa;
+    --card: #ffffff;
+    --text: #1a1a2e;
+    --text-light: #6b7280;
+    --danger: #e74c3c;
+    --success: #27ae60;
+    --warning: #f39c12;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--primary);
+    color: white;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+  .header-content { position: relative; z-index: 1; }
+  .logo {
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: var(--accent-light);
+  }
+  .logo span { color: white; }
+  header p { font-size: 14px; opacity: 0.8; margin-top: 4px; }
+
+  /* ── Container ── */
+  .container { max-width: 720px; margin: 0 auto; padding: 24px 16px; }
+
+  /* ── Progress bar ── */
+  .progress-wrap { margin-bottom: 28px; }
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--text-light);
+    margin-bottom: 6px;
+  }
+  .progress-bar {
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-light), var(--accent));
+    border-radius: 99px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    padding: 28px 24px;
+    margin-bottom: 16px;
+  }
+
+  /* ── Age group selection ── */
+  .age-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .age-btn {
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px 12px;
+    cursor: pointer;
+    background: white;
+    text-align: center;
+    transition: all 0.2s;
+    font-size: 14px;
+  }
+  .age-btn:hover { border-color: var(--primary-light); background: #f0f4ff; }
+  .age-btn.selected { border-color: var(--primary); background: var(--primary); color: white; }
+  .age-btn .age-icon { font-size: 28px; display: block; margin-bottom: 6px; }
+  .age-btn .age-label { font-weight: 700; display: block; }
+  .age-btn .age-desc { font-size: 12px; opacity: 0.7; margin-top: 2px; }
+
+  /* ── Question ── */
+  .question-meta {
+    font-size: 12px;
+    color: var(--primary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .question-text {
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1.5;
+    margin-bottom: 20px;
+    color: #1a1a2e;
+  }
+  .question-section-title {
+    font-size: 13px;
+    color: var(--text-light);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed #e2e8f0;
+  }
+
+  /* ── Options ── */
+  .option-list { display: flex; flex-direction: column; gap: 10px; }
+  .option-btn {
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 13px 16px;
+    cursor: pointer;
+    background: white;
+    text-align: left;
+    font-size: 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    transition: all 0.2s;
+    line-height: 1.45;
+  }
+  .option-btn:hover { border-color: var(--primary-light); background: #f5f8ff; }
+  .option-btn.selected {
+    border-color: var(--primary);
+    background: #eef2ff;
+    color: var(--primary);
+    font-weight: 600;
+  }
+  .option-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #cbd5e1;
+    flex-shrink: 0;
+    margin-top: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .option-btn.selected .option-dot {
+    background: var(--primary);
+    border-color: var(--primary);
+  }
+  .option-dot::after {
+    content: "✓";
+    color: white;
+    font-size: 11px;
+    font-weight: 900;
+    display: none;
+  }
+  .option-btn.selected .option-dot::after { display: block; }
+
+  /* ── Buttons ── */
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 28px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 16px;
+    transition: background 0.2s;
+  }
+  .btn-primary:hover { background: var(--primary-light); }
+  .btn-primary:disabled { background: #cbd5e1; cursor: not-allowed; }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text-light);
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 20px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+  .btn-secondary:hover { border-color: var(--primary-light); color: var(--primary); }
+
+  /* ── AI Analysis Button ── */
+  .btn-ai {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    flex: 1;
+    margin-top: 10px;
+    transition: all 0.3s;
+  }
+  .btn-ai:hover { opacity: 0.9; transform: translateY(-1px); }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    backdrop-filter: blur(4px);
+  }
+  .modal-card {
+    background: white;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 520px;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px 0;
+  }
+  .modal-header h3 { font-size: 18px; color: var(--primary); }
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: #999;
+    line-height: 1;
+    padding: 0;
+  }
+  .modal-close:hover { color: #333; }
+  .modal-body { padding: 16px 24px 24px; }
+  .modal-desc {
+    font-size: 14px;
+    color: var(--text-light);
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+  .api-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .api-input-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .api-input {
+    flex: 1;
+    padding: 11px 14px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: monospace;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .api-input:focus { border-color: var(--primary-light); }
+  .btn-run-analysis {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 11px 18px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+  }
+  .btn-run-analysis:hover { opacity: 0.9; }
+  .btn-run-analysis:disabled { opacity: 0.5; cursor: not-allowed; }
+  .api-note {
+    font-size: 11px;
+    color: var(--text-light);
+    margin-top: 6px;
+  }
+  .ai-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 24px;
+    color: var(--primary);
+    font-size: 14px;
+  }
+  .spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid #e2e8f0;
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .ai-result {
+    background: #f8f9ff;
+    border-radius: 12px;
+    padding: 16px;
+    font-size: 14px;
+    line-height: 1.7;
+    max-height: 400px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    color: var(--text);
+    border: 1px solid #e2e8f0;
+  }
+  .ai-result h4 { color: var(--primary); margin-bottom: 8px; font-size: 15px; }
+  .ai-result .risk-high { color: var(--danger); font-weight: 700; }
+  .ai-result .risk-mid { color: var(--warning); font-weight: 700; }
+  .ai-result .risk-low { color: var(--success); font-weight: 700; }
+  .ai-error {
+    background: #fff5f5;
+    border: 1px solid #fed7d7;
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--danger);
+    font-size: 13px;
+  }
+
+  .btn-row { display: flex; gap: 10px; }
+  .btn-row .btn-primary { flex: 1; margin-top: 0; }
+
+  /* ── Result ── */
+  .result-header { text-align: center; padding: 8px 0 20px; }
+  .result-header h2 { font-size: 22px; margin-bottom: 4px; }
+  .result-header p { color: var(--text-light); font-size: 14px; }
+
+  .score-ring {
+    width: 160px;
+    height: 160px;
+    margin: 0 auto 24px;
+    position: relative;
+  }
+  .score-ring svg {
+    transform: rotate(-90deg);
+    width: 160px;
+    height: 160px;
+  }
+  .score-ring circle {
+    fill: none;
+    stroke-width: 14;
+  }
+  .score-ring .bg { stroke: #e2e8f0; }
+  .score-ring .fg { stroke: var(--success); stroke-linecap: round; stroke-dasharray: 408; stroke-dashoffset: 408; transition: stroke-dashoffset 1.2s ease; }
+  .score-ring .fg.warn { stroke: var(--warning); }
+  .score-ring .fg.danger { stroke: var(--danger); }
+  .score-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .score-pct { font-size: 36px; font-weight: 900; line-height: 1; color: var(--text); }
+  .score-label { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+
+  .result-verdict {
+    text-align: center;
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+  .verdict-high { background: #eafaf1; color: #1e8449; }
+  .verdict-mid { background: #fef9e7; color: #9a7d0a; }
+  .verdict-low { background: #fde8e8; color: #c0392b; }
+
+  .result-tips { margin-top: 16px; }
+  .result-tips h3 { font-size: 15px; margin-bottom: 10px; color: var(--primary); }
+  .tip-item {
+    display: flex;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .tip-item:last-child { border-bottom: none; }
+  .tip-icon { font-size: 18px; flex-shrink: 0; }
+
+  /* ── Page hide/show ── */
+  .page { display: none !important; }
+  .page.active { display: block !important; }
+
+  /* ── Animations ── */
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .card { animation: fadeIn 0.35s ease; }
+
+  /* ── Disclaimer ── */
+  .disclaimer {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-light);
+    padding: 12px 16px 24px;
+    line-height: 1.6;
+  }
+
+  /* ── Loading ── */
+  .loading-dots::after {
+    content: "";
+    animation: dots 1.5s steps(4, end) infinite;
+  }
+  @keyframes dots { 0%{content:""} 25%{content:"."} 50%{content:".."} 75%{content:"..."} }
+
+  /* ── Input fields ── */
+  .input-field {
+    width: 100%;
+    padding: 11px 14px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.2s;
+    background: white;
+  }
+  .input-field:focus { outline: none; border-color: var(--primary-light); }
+
+  .field-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-light);
+    margin-bottom: 6px;
+    display: block;
+  }
+  .field-group { margin-bottom: 14px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-content">
+    <div class="logo">美签<span>通</span></div>
+    <p>美国 B1/B2 签证通过率智能评估 · 免费测试</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ══ PAGE 1: 介绍 ══ -->
+  <div id="page-intro" class="page active">
+    <div class="card">
+      <div style="text-align:center; padding: 12px 0 20px;">
+        <div style="font-size:56px;">🗽</div>
+        <h2 style="font-size:22px; margin: 12px 0 8px;">你的美签通过率有多少？</h2>
+        <p style="color: var(--text-light); font-size:14px; line-height:1.7;">
+          基于 10 年签证大数据 &amp; DS-160 填写规范，模拟真实面签场景，综合评估你的签证通过概率。
+        </p>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin: 20px 0;">
+        <div style="text-align:center; padding:14px 8px; background:#f0f4ff; border-radius:12px;">
+          <div style="font-size:22px;">⏱️</div>
+          <div style="font-size:12px; font-weight:700; margin-top:4px;">约 3 分钟</div>
+          <div style="font-size:11px; color:#888;">快速完成</div>
+        </div>
+        <div style="text-align:center; padding:14px 8px; background:#fff8e6; border-radius:12px;">
+          <div style="font-size:22px;">🎯</div>
+          <div style="font-size:12px; font-weight:700; margin-top:4px;">10–20 题</div>
+          <div style="font-size:11px; color:#888;">个性化测试</div>
+        </div>
+        <div style="text-align:center; padding:14px 8px; background:#eafaf1; border-radius:12px;">
+          <div style="font-size:22px;">🔒</div>
+          <div style="font-size:12px; font-weight:700; margin-top:4px;">完全免费</div>
+          <div style="font-size:11px; color:#888;">隐私保护</div>
+        </div>
+      </div>
+
+      <div class="question-section-title" style="margin-top:16px;">📋 测试涵盖维度</div>
+      <div style="display:flex; flex-direction:column; gap:8px; font-size:13px; color:#555;">
+        <div>✅ 个人基本信息 &amp; 出行目的</div>
+        <div>✅ 财务能力 &amp; 国内约束力</div>
+        <div>✅ DS-160 填写质量评估</div>
+        <div>✅ 旅行历史 &amp; 拒签风险排查</div>
+        <div>✅ 面签表现预判</div>
+      </div>
+
+      <button class="btn-primary" onclick="goPage('age')" style="margin-top:24px;">开始评估 →</button>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 2: 年龄段选择 ══ -->
+  <div id="page-age" class="page">
+    <div class="card">
+      <div class="question-meta">STEP 1 / 4</div>
+      <div class="question-text">你的年龄属于哪个区间？</div>
+      <div class="question-section-title">不同年龄签证官评估重点不同，请选择你的年龄段</div>
+      <div class="age-grid" style="margin-top:12px;">
+        <button class="age-btn" onclick="selectAge(this, 'student')">
+          <span class="age-icon">🎒</span>
+          <span class="age-label">学生党</span>
+          <span class="age-desc">18–25岁·在校或刚毕业</span>
+        </button>
+        <button class="age-btn" onclick="selectAge(this, 'young')">
+          <span class="age-icon">💼</span>
+          <span class="age-label">在职人士</span>
+          <span class="age-desc">26–45岁·工作稳定</span>
+        </button>
+        <button class="age-btn" onclick="selectAge(this, 'senior')">
+          <span class="age-icon">🏠</span>
+          <span class="age-label">家庭/中年</span>
+          <span class="age-desc">46–60岁·有家庭约束</span>
+        </button>
+        <button class="age-btn" onclick="selectAge(this, 'elder')">
+          <span class="age-icon">🌴</span>
+          <span class="age-label">退休人员</span>
+          <span class="age-desc">60岁以上·已退休</span>
+        </button>
+      </div>
+      <button class="btn-primary" id="btn-age" onclick="goPage('info')" disabled style="margin-top:20px;">下一步 →</button>
+    </div>
+  </div>
+
+  <!-- ══ PAGE 3: 基本信息 ══ -->
+  <div id="page-info" class="page">
+    <div class="progress-wrap">
+      <div class="progress-info">
+        <span>STEP 2 / 4 · 基本信息</span>
+        <span id="progress-text">1 / 4</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    </div>
+    <div class="card" id="info-card">
+      <!-- JS 渲染 -->
+    </div>
+  </div>
+
+  <!-- ══ PAGE 4: 测试问题 ══ -->
+  <div id="page-test" class="page">
+    <div class="progress-wrap">
+      <div class="progress-info">
+        <span>STEP 3 / 4 · 问答评估</span>
+        <span id="q-progress-text">1 / 10</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="q-progress-fill"></div></div>
+    </div>
+    <div class="card" id="question-card">
+      <!-- JS 渲染 -->
+    </div>
+  </div>
+
+  <!-- ══ PAGE 5: 结果 ══ -->
+  <div id="page-result" class="page">
+    <div class="card">
+      <div class="result-header">
+        <h2>🎉 评估完成！</h2>
+        <p>以下是您的美签通过率综合评估报告</p>
+      </div>
+
+      <div class="score-ring">
+        <svg viewBox="0 0 160 160">
+          <circle class="bg" cx="80" cy="80" r="65"/>
+          <circle class="fg" id="score-circle" cx="80" cy="80" r="65"/>
+        </svg>
+        <div class="score-center">
+          <div class="score-pct" id="score-pct">--%</div>
+          <div class="score-label">通过率估算</div>
+        </div>
+      </div>
+
+      <div id="result-verdict" class="result-verdict"></div>
+
+      <div style="background:#f8fafc; border-radius:12px; padding:16px; margin-bottom:16px;">
+        <div style="font-size:13px; font-weight:700; color:var(--primary); margin-bottom:10px;">📊 分项评分</div>
+        <div id="score-breakdown"></div>
+      </div>
+
+      <div class="result-tips">
+        <h3>💡 提升通过率的建议</h3>
+        <div id="tips-list"></div>
+      </div>
+
+      <div class="btn-row" style="margin-top:20px;">
+        <button class="btn-secondary" onclick="resetTest()">重新测试 🔄</button>
+        <button class="btn-ai" id="btn-ai-analyze" onclick="openAiModal()">🤖 AI深度分析</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ AI 分析弹窗 ══ -->
+  <div id="ai-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🤖 AI 深度分析</h3>
+        <button class="modal-close" onclick="closeAiModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">AI 将根据你的所有答题数据，进行个性化深度分析，识别高风险点并给出面签策略建议。</p>
+        <div style="text-align:center; padding:8px 0 16px;">
+          <button class="btn-run-analysis" id="btn-run-analysis" onclick="runAiAnalysis()">🚀 开始 AI 深度分析</button>
+        </div>
+        <div id="ai-loading" class="ai-loading" style="display:none;">
+          <div class="spinner"></div>
+          <span>AI 正在深度分析你的数据...</span>
+        </div>
+        <div id="ai-result" class="ai-result" style="display:none;"></div>
+        <div id="ai-error" class="ai-error" style="display:none;"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="disclaimer">
+  ⚠️ 本测试仅供参考，不能替代官方签证申请结果。签证通过取决于领事官员的综合判断。
+</div>
+
+<script>
+// ══════════════════════════════════════
+//  数据定义
+// ══════════════════════════════════════
+
+const AGE_GROUPS = {
+  student: {
+    name: "学生党（18–25岁）",
+    icon: "🎒",
+    weight: { finances: 0.2, ties: 0.3, history: 0.2, ds160: 0.15, interview: 0.15 },
+    questions: [
+      {
+        section: "出行目的",
+        q: "你计划去美国的主要目的是什么？",
+        options: [
+          { text: "参加学术会议 / 交换生项目", score: 10 },
+          { text: "参加 Summer School / 冬令营 / 短期培训", score: 8 },
+          { text: "旅游观光，探访朋友或亲戚", score: 6 },
+          { text: "没有明确计划，就是想去", score: 2 },
+        ]
+      },
+      {
+        section: "家庭约束",
+        q: "你的父母（或主要亲属）知道并支持你去美国吗？",
+        options: [
+          { text: "父母全力支持，愿意提供资金担保", score: 10 },
+          { text: "父母知道并同意，但经济上有限制", score: 7 },
+          { text: "家里比较犹豫，还在考虑", score: 3 },
+          { text: "家里人不太支持或不知情", score: 0 },
+        ]
+      },
+      {
+        section: "财务能力",
+        q: "你的留学/旅行资金主要来源是什么？",
+        options: [
+          { text: "父母全额支持，有稳定的资产证明（房产、存款等）", score: 10 },
+          { text: "全额奖学金 / 学校资助", score: 10 },
+          { text: "父母支持，但无额外资产证明", score: 6 },
+          { text: "靠自己打工积攒，资金有限", score: 3 },
+        ]
+      },
+      {
+        section: "学历背景",
+        q: "你目前（或最近）的学历/学校情况？",
+        options: [
+          { text: "985/211 重点大学在读或毕业生", score: 10 },
+          { text: "普通本科院校，成绩优秀", score: 8 },
+          { text: "普通本科，成绩一般", score: 5 },
+          { text: "学历较低或无明确学习经历", score: 2 },
+        ]
+      },
+      {
+        section: "旅行历史",
+        q: "你过去五年去过哪些国家/地区？",
+        options: [
+          { text: "去过 3 个以上发达国家（美/英/申根/日/澳/新等）", score: 10 },
+          { text: "去过 1–3 个发达国家", score: 7 },
+          { text: "只去过东南亚或港澳台", score: 5 },
+          { text: "从未出过国（或只有一次免签）", score: 2 },
+        ]
+      },
+      {
+        section: "国内约束",
+        q: "你在国内有稳定的社会关系/资产吗？",
+        options: [
+          { text: "有房产/车辆/在读学籍/家庭纽带", score: 10 },
+          { text: "有部分约束（学籍、父母在等）", score: 7 },
+          { text: "约束力一般，毕业后去向未定", score: 4 },
+          { text: "无固定资产，无稳定社会关系", score: 1 },
+        ]
+      },
+      {
+        section: "拒签历史",
+        q: "你之前有没有被美国或其他国家拒签过？",
+        options: [
+          { text: "从未被拒签", score: 10 },
+          { text: "有过 1 次美国拒签，但知道原因并已改善", score: 5 },
+          { text: "有过 2 次以上拒签记录", score: 2 },
+          { text: "有移民倾向相关记录", score: 0 },
+        ]
+      },
+      {
+        section: "英语能力",
+        q: "你的英语口语水平如何？",
+        options: [
+          { text: "能流畅沟通，可应对面签英语问答", score: 10 },
+          { text: "日常交流OK，面签准备过常见问题", score: 7 },
+          { text: "一般，需要带翻译或用中文面签", score: 4 },
+          { text: "基本不会英语", score: 2 },
+        ]
+      },
+      {
+        section: "DS-160 填写",
+        q: "你的 DS-160 表格是自己填写还是委托中介/旅行社？",
+        options: [
+          { text: "自己仔细填写，内容真实完整", score: 10 },
+          { text: "中介帮忙填写，我审核过内容", score: 7 },
+          { text: "中介全权代办，我没仔细核对", score: 4 },
+          { text: "随便填写，甚至找人代填不知道内容", score: 1 },
+        ]
+      },
+      {
+        section: "面签准备",
+        q: "你对面签准备程度如何？",
+        options: [
+          { text: "已了解常见问题，能清晰说明出行目的", score: 10 },
+          { text: "知道大概流程，但还没开始准备", score: 6 },
+          { text: "完全不知道面签会问什么", score: 2 },
+          { text: "听说可以给钱【走后门】（危险！这是诈骗）", score: 0 },
+        ]
+      },
+      {
+        section: "美国关系",
+        q: "你在美国是否有直系亲属？",
+        options: [
+          { text: "无美国亲属", score: 10 },
+          { text: "有远房亲戚，不常联系", score: 7 },
+          { text: "有朋友在美国，不涉及移民倾向", score: 5 },
+          { text: "有直系亲属（父母/配偶/子女）在美国", score: 2 },
+        ]
+      },
+      {
+        section: "敏感国家",
+        q: "过去5年你是否去过以下敏感国家？",
+        options: [
+          { text: "从未去过伊朗、伊拉克、叙利亚、苏丹、古巴、朝鲜", score: 10 },
+          { text: "去过其中1个，但有正当理由（留学/工作）", score: 5 },
+          { text: "去过其中多个，行程较复杂", score: 2 },
+          { text: "在敏感国家有长期居住史", score: 0 },
+        ]
+      },
+      {
+        section: "房产与资产",
+        q: "你在国内是否有房产或其他固定资产？",
+        options: [
+          { text: "有房产（已付清或还有贷款）", score: 10 },
+          { text: "有车辆或其他资产", score: 7 },
+          { text: "租房子住，无固定资产", score: 3 },
+          { text: "无任何固定资产", score: 0 },
+        ]
+      },
+      {
+        section: "日本/申根记录",
+        q: "你是否有日本或申根签证记录？",
+        options: [
+          { text: "去过日本或申根国家，无任何违规记录", score: 10 },
+          { text: "有日本或申根签证，但还未出行", score: 7 },
+          { text: "只有东南亚签证记录", score: 5 },
+          { text: "无任何发达国家签证记录", score: 2 },
+        ]
+      },
+    ]
+  },
+
+  young: {
+    name: "在职人士（26–45岁）",
+    icon: "💼",
+    weight: { finances: 0.25, ties: 0.25, history: 0.15, ds160: 0.15, interview: 0.2 },
+    questions: [
+      {
+        section: "出行目的",
+        q: "你去美国的主要目的是什么？",
+        options: [
+          { text: "商务出差 / 参加行业会议 / 培训", score: 10 },
+          { text: "探访在美国的亲友（PRIW）", score: 8 },
+          { text: "旅游观光", score: 6 },
+          { text: "想借旅游名义【顺便】考察机会（危险信号）", score: 1 },
+        ]
+      },
+      {
+        section: "职业状态",
+        q: "你目前的工作状态是？",
+        options: [
+          { text: "知名企业/事业单位/公务员，工作 3 年以上", score: 10 },
+          { text: "普通企业正式员工，工作稳定", score: 8 },
+          { text: "私营业主 / 自由职业，有稳定收入", score: 6 },
+          { text: "无业 / 临时工 / 试用期", score: 2 },
+        ]
+      },
+      {
+        section: "收入水平",
+        q: "你的年收入（含年终奖）大概是多少？",
+        options: [
+          { text: "30 万人民币以上，有资产证明", score: 10 },
+          { text: "15–30 万，有流水证明", score: 8 },
+          { text: "8–15 万，收入一般", score: 5 },
+          { text: "8 万以下或无稳定收入", score: 2 },
+        ]
+      },
+      {
+        section: "财务证明",
+        q: "你能提供哪些资金/资产证明？",
+        options: [
+          { text: "房产证 + 6 个月以上银行流水 + 存款证明", score: 10 },
+          { text: "有存款证明 + 银行流水（至少 6 个月）", score: 8 },
+          { text: "只有近期存款，无长期流水", score: 5 },
+          { text: "无法提供任何资金证明", score: 0 },
+        ]
+      },
+      {
+        section: "家庭状态",
+        q: "你的家庭情况是？",
+        options: [
+          { text: "已婚有子女，配偶和子女都在国内", score: 10 },
+          { text: "未婚但有父母和其他亲属在国内", score: 7 },
+          { text: "单身，无子女，父母也不在国内", score: 3 },
+          { text: "有移民倾向的迹象（单身 / 资产转移等）", score: 0 },
+        ]
+      },
+      {
+        section: "旅行历史",
+        q: "你过去 5 年去过哪些国家？",
+        options: [
+          { text: "3 个以上发达国家（美/英/申根/日/澳/新等）", score: 10 },
+          { text: "1–3 个发达国家，有良好的出入境记录", score: 7 },
+          { text: "只有东南亚/港澳台记录", score: 4 },
+          { text: "从未出过国", score: 1 },
+        ]
+      },
+      {
+        section: "拒签历史",
+        q: "你之前有没有被拒签的记录？",
+        options: [
+          { text: "从未被拒签", score: 10 },
+          { text: "有过 1 次美国拒签，了解原因并已解决", score: 5 },
+          { text: "有 2 次以上拒签（含其他国家）", score: 1 },
+          { text: "有行政审查（Check）或被拒的经历", score: 0 },
+        ]
+      },
+      {
+        section: "DS-160 填写",
+        q: "DS-160 表格中，你的工作经历填写情况如何？",
+        options: [
+          { text: "完整填写了近 5 年所有工作经历，时间无空档", score: 10 },
+          { text: "大部分填写，有少量合并或省略", score: 7 },
+          { text: "故意隐瞒工作空档期或虚假信息", score: 1 },
+          { text: "找人代填，不清楚自己填了什么", score: 2 },
+        ]
+      },
+      {
+        section: "面签表现",
+        q: "面签时，你能清晰回答以下哪类问题？",
+        options: [
+          { text: "行程安排、住宿、在美联系人全部能说清楚", score: 10 },
+          { text: "能说明大概行程，但对细节不太确定", score: 6 },
+          { text: "不太清楚，需要中介【教】我怎么答", score: 3 },
+          { text: "完全不了解，准备临场发挥", score: 1 },
+        ]
+      },
+      {
+        section: "出境意图",
+        q: "你有没有任何可能被视为【移民倾向】的迹象？",
+        options: [
+          { text: "无任何移民倾向迹象，家庭事业都在国内", score: 10 },
+          { text: "有美国亲属（正常探亲），但不打算留下", score: 8 },
+          { text: "有美国亲戚且关系密切，来往频繁", score: 5 },
+          { text: "有美国工作邀请/留学计划还未确定", score: 1 },
+        ]
+      },
+      {
+        section: "美国联系人",
+        q: "你在美国是否有联系人？他们与你的关系是？",
+        options: [
+          { text: "有美国朋友/商业伙伴，关系正常", score: 10 },
+          { text: "有美国朋友，关系一般", score: 7 },
+          { text: "有美国网友，从未见过面", score: 4 },
+          { text: "有美国网友并打算见面后长期留在美国", score: 1 },
+        ]
+      },
+      {
+        section: "敏感国家",
+        q: "过去5年你是否去过敏感国家/地区？",
+        options: [
+          { text: "从未去过伊朗、伊拉克、叙利亚、苏丹、古巴、朝鲜等", score: 10 },
+          { text: "去过其中1个，有正当留学/工作理由", score: 5 },
+          { text: "去过多个敏感国家，行程复杂", score: 2 },
+          { text: "在敏感国家有长期居住史", score: 0 },
+        ]
+      },
+      {
+        section: "资产证明",
+        q: "你赴美的资金证明准备情况如何？",
+        options: [
+          { text: "有6个月以上银行流水+存款证明+房产证", score: 10 },
+          { text: "有存款证明，但银行流水不足6个月", score: 7 },
+          { text: "只有近期存款，无完整流水", score: 4 },
+          { text: "无法提供任何资金证明", score: 0 },
+        ]
+      },
+      {
+        section: "行程细节",
+        q: "你是否有详细的行程安排？",
+        options: [
+          { text: "有完整往返机票预订+酒店+每日行程", score: 10 },
+          { text: "有大致行程安排，还没有预订", score: 7 },
+          { text: "只知道要去哪些城市，没有详细计划", score: 4 },
+          { text: "没有行程安排，走到哪算哪", score: 1 },
+        ]
+      },
+      {
+        section: "日本/申根记录",
+        q: "你是否有日本或申根签证的良好记录？",
+        options: [
+          { text: "有日本或申根签证，且无违规记录", score: 10 },
+          { text: "有签证但还未出行", score: 7 },
+          { text: "只有东南亚签证记录", score: 5 },
+          { text: "无任何发达国家签证记录", score: 2 },
+        ]
+      },
+      {
+        section: "社交媒体",
+        q: "你的社交媒体上是否发过移民相关的内容？",
+        options: [
+          { text: "从未发过，没有任何相关迹象", score: 10 },
+          { text: "偶尔点赞，但没有发过相关内容", score: 8 },
+          { text: "发过移民倾向的朋友圈/帖子", score: 3 },
+          { text: "明确表示过想移民美国", score: 0 },
+        ]
+      },
+      {
+        section: "职业稳定性",
+        q: "你在现公司的在职年限是？",
+        options: [
+          { text: "3年以上，非常稳定", score: 10 },
+          { text: "1–3年，有合同保障", score: 7 },
+          { text: "1年以下，试用期或短期合同", score: 4 },
+          { text: "频繁换工作（每年超过1次）", score: 1 },
+        ]
+      },
+    ]
+  },
+
+  senior: {
+    name: "家庭/中年人士（46–60岁）",
+    icon: "🏠",
+    weight: { finances: 0.2, ties: 0.3, history: 0.15, ds160: 0.15, interview: 0.2 },
+    questions: [
+      {
+        section: "出行目的",
+        q: "你去美国的主要目的是什么？",
+        options: [
+          { text: "参加子女毕业典礼 / 探望子女", score: 10 },
+          { text: "随旅行团旅游 / 商务考察", score: 7 },
+          { text: "自由行旅游探访朋友", score: 6 },
+          { text: "想借机在美国处理一些【事情】（危险）", score: 0 },
+        ]
+      },
+      {
+        section: "资产证明",
+        q: "你有哪些资产或财务证明？",
+        options: [
+          { text: "房产 + 退休工资/养老金流水 + 存款证明", score: 10 },
+          { text: "有退休金或稳定养老金，有银行流水", score: 8 },
+          { text: "有少量存款，但没有固定资产", score: 5 },
+          { text: "无资产，主要依靠子女资助", score: 3 },
+        ]
+      },
+      {
+        section: "家庭纽带",
+        q: "你的家庭和国内联系紧密度如何？",
+        options: [
+          { text: "已婚，子女在国内，有房产，工作/退休在国内", score: 10 },
+          { text: "已婚有家庭纽带，子女在国外但定期回国", score: 7 },
+          { text: "单身或离异，无子女在国内", score: 3 },
+          { text: "单身，且有移民意向的强烈信号", score: 0 },
+        ]
+      },
+      {
+        section: "旅行历史",
+        q: "你过去 5 年的出境记录？",
+        options: [
+          { text: "有 2 次以上发达国家出行记录，无违规", score: 10 },
+          { text: "去过 1 个发达国家，出入境正常", score: 7 },
+          { text: "只有东南亚/港澳台记录", score: 4 },
+          { text: "从未出过国或只有免签记录", score: 2 },
+        ]
+      },
+      {
+        section: "拒签历史",
+        q: "你有过拒签记录吗？",
+        options: [
+          { text: "从未被拒签", score: 10 },
+          { text: "有过 1 次拒签，但原因已解决", score: 5 },
+          { text: "有 2 次以上拒签记录", score: 1 },
+          { text: "有不良记录（签证过期、逾期滞留等）", score: 0 },
+        ]
+      },
+      {
+        section: "DS-160 填写",
+        q: "DS-160 中关于工作和退休状态，你是怎么填的？",
+        options: [
+          { text: "真实填写退休/在职状态，工作经历无遗漏", score: 10 },
+          { text: "工作经历有小瑕疵但无重大虚假", score: 7 },
+          { text: "有人为隐瞒或空档（危险）", score: 1 },
+          { text: "找人代填，不清楚内容", score: 2 },
+        ]
+      },
+      {
+        section: "英语能力",
+        q: "你的英语水平能否应对面签？",
+        options: [
+          { text: "英语熟练或提前准备了面签常见问题", score: 10 },
+          { text: "有翻译陪同，或提前准备了关键问题的中文答案", score: 7 },
+          { text: "语言不通，且完全没有准备", score: 2 },
+          { text: "曾因语言问题被拒签过", score: 0 },
+        ]
+      },
+      {
+        section: "国内约束",
+        q: "你在国内最核心的约束力是什么？",
+        options: [
+          { text: "退休工资/养老金、房产、子女/孙辈在国内", score: 10 },
+          { text: "有子女在国内，有一定约束", score: 7 },
+          { text: "国内关系一般，资产也一般", score: 3 },
+          { text: "已在准备移民，资产已转移境外", score: 0 },
+        ]
+      },
+      {
+        section: "保险覆盖",
+        q: "你是否有境外旅行保险或医疗保险？",
+        options: [
+          { text: "已购买覆盖全程的境外旅行保险", score: 10 },
+          { text: "有基础医疗保险，不确定是否覆盖美国", score: 6 },
+          { text: "没有买任何保险", score: 2 },
+        ]
+      },
+      {
+        section: "随行人员",
+        q: "这次申请是否与家人同行？",
+        options: [
+          { text: "全家一起申请，或有子女/配偶同行", score: 10 },
+          { text: "有亲友同行（均已正常申请签证）", score: 7 },
+          { text: "独自申请，但有子女/配偶在国内", score: 5 },
+          { text: "独自申请，且无明确回国计划的人约束", score: 2 },
+        ]
+      },
+      {
+        section: "美国关系",
+        q: "你在美国是否有直系亲属？",
+        options: [
+          { text: "无美国亲属", score: 10 },
+          { text: "有远房亲戚或朋友，不常联系", score: 7 },
+          { text: "有朋友在美国，关系一般", score: 5 },
+          { text: "有直系亲属（子女/配偶）在美国定居", score: 2 },
+        ]
+      },
+      {
+        section: "行程细节",
+        q: "你的赴美行程安排有多详细？",
+        options: [
+          { text: "有往返机票预订+酒店+每日行程计划", score: 10 },
+          { text: "有大致行程安排，还没有预订", score: 7 },
+          { text: "只知道目的城市，没有详细计划", score: 4 },
+          { text: "没有行程安排，走一步看一步", score: 1 },
+        ]
+      },
+      {
+        section: "资产转移",
+        q: "你或家人是否已将资产转移到海外？",
+        options: [
+          { text: "资产全部在国内，无任何转移", score: 10 },
+          { text: "有小额海外投资，但主体在国内", score: 7 },
+          { text: "有较大额海外资产，但不涉及美国", score: 4 },
+          { text: "已将主要资产转移到海外账户", score: 0 },
+        ]
+      },
+      {
+        section: "日本/申根记录",
+        q: "你是否有日本或申根签证记录？",
+        options: [
+          { text: "有日本或申根签证，且无违规记录", score: 10 },
+          { text: "有签证但还未出行", score: 7 },
+          { text: "只有东南亚或港澳台记录", score: 4 },
+          { text: "无任何发达国家签证记录", score: 2 },
+        ]
+      },
+      {
+        section: "DS-160真实性",
+        q: "你的DS-160表格信息完整度如何？",
+        options: [
+          { text: "完整填写，所有信息已核查无误", score: 10 },
+          { text: "大部分填写，有少量不确定项", score: 7 },
+          { text: "有人为遗漏或隐瞒的信息", score: 2 },
+          { text: "找人代填，不清楚内容", score: 0 },
+        ]
+      },
+      {
+        section: "子女签证",
+        q: "随行或在美国联系的子女签证状态如何？",
+        options: [
+          { text: "子女有有效美国签证，信息与我的DS-160一致", score: 10 },
+          { text: "子女有签证，但信息还未确认", score: 6 },
+          { text: "子女没有美国签证或在申请中", score: 3 },
+          { text: "子女在美国逾期滞留", score: 0 },
+        ]
+      },
+    ]
+  },
+
+  elder: {
+    name: "退休人员（60岁以上）",
+    icon: "🌴",
+    weight: { finances: 0.2, ties: 0.35, history: 0.15, ds160: 0.15, interview: 0.15 },
+    questions: [
+      {
+        section: "出行目的",
+        q: "你去美国的主要目的是？",
+        options: [
+          { text: "探望子女/孙辈 / 参加婚礼/毕业典礼等重要家庭活动", score: 10 },
+          { text: "随团旅游 / 邮轮旅行（行程固定）", score: 8 },
+          { text: "自由行旅游探访朋友", score: 6 },
+          { text: "想长期留在美国（危险信号）", score: 0 },
+        ]
+      },
+      {
+        section: "退休金保障",
+        q: "你每月的退休金/养老金大概有多少？",
+        options: [
+          { text: "退休金 5000 元以上，有稳定来源", score: 10 },
+          { text: "退休金 2000–5000 元，能维持基本生活", score: 7 },
+          { text: "退休金 2000 元以下或不确定", score: 4 },
+          { text: "无退休金，依靠子女或积蓄", score: 2 },
+        ]
+      },
+      {
+        section: "资金证明",
+        q: "你赴美旅行的资金来源是什么？",
+        options: [
+          { text: "子女全额资助 + 有存款/房产证明", score: 10 },
+          { text: "自己有积蓄 + 子女部分支持", score: 7 },
+          { text: "完全由子女资助，但无资产证明", score: 5 },
+          { text: "来源不明或由在美亲属提供（移民倾向风险）", score: 1 },
+        ]
+      },
+      {
+        section: "家庭纽带",
+        q: "你的家庭和国内的联系紧密度？",
+        options: [
+          { text: "老伴在国内，子女孙辈定期回国探望", score: 10 },
+          { text: "老伴在国内，有子女在国内定期联系", score: 8 },
+          { text: "老伴已故/不在国内，独自生活", score: 4 },
+          { text: "全家都在美国，只有你自己在国内", score: 1 },
+        ]
+      },
+      {
+        section: "健康状况",
+        q: "你的健康状况是否能支持长途旅行？",
+        options: [
+          { text: "身体健康，无影响出行的疾病", score: 10 },
+          { text: "有慢性病（高血压/糖尿病等），但病情稳定", score: 8 },
+          { text: "有较严重疾病，需要长期医疗支持", score: 3 },
+          { text: "健康状况差，有长期住院用药需求", score: 1 },
+        ]
+      },
+      {
+        section: "旅行历史",
+        q: "你过去 5 年的出国旅行记录？",
+        options: [
+          { text: "有 2 次以上发达国家旅行记录，无任何违规", score: 10 },
+          { text: "去过 1 个发达国家，正常出入境", score: 7 },
+          { text: "只有东南亚/港澳台", score: 4 },
+          { text: "从未出过国", score: 2 },
+        ]
+      },
+      {
+        section: "拒签历史",
+        q: "你有没有被拒签的记录？",
+        options: [
+          { text: "从未被拒签", score: 10 },
+          { text: "有过 1 次拒签，但原因已解决", score: 5 },
+          { text: "有 2 次以上拒签", score: 1 },
+          { text: "有逾期滞留记录", score: 0 },
+        ]
+      },
+      {
+        section: "国内约束力",
+        q: "你回国的最强约束力是什么？",
+        options: [
+          { text: "老伴在国内 + 房产 + 退休金定期发放", score: 10 },
+          { text: "有退休金在国内，子女也常联系", score: 7 },
+          { text: "退休金不稳定，国内关系一般", score: 3 },
+          { text: "国内无房产，老伴子女都在美国", score: 0 },
+        ]
+      },
+      {
+        section: "随行子女",
+        q: "如果有子女同行，子女签证状态如何？",
+        options: [
+          { text: "子女有有效美国签证，DS-160 信息一致", score: 10 },
+          { text: "子女有签证，但信息还没确认是否一致", score: 6 },
+          { text: "子女没有美国签证或正在申请", score: 3 },
+          { text: "子女在美国且没有回来计划", score: 0 },
+        ]
+      },
+      {
+        section: "保险保障",
+        q: "你是否有覆盖美国的旅行保险或健康保险？",
+        options: [
+          { text: "已购买覆盖美国的境外旅行险（含医疗紧急救援）", score: 10 },
+          { text: "有基础保险，但不确认是否覆盖美国", score: 6 },
+          { text: "没有购买任何境外保险", score: 2 },
+        ]
+      },
+      {
+        section: "子女签证",
+        q: "随行或在美国联系的子女签证状态如何？",
+        options: [
+          { text: "子女有有效美国签证，与我的DS-160信息一致", score: 10 },
+          { text: "子女有签证，但信息还未确认", score: 6 },
+          { text: "子女无美国签证或正在申请", score: 3 },
+          { text: "子女在美国无合法身份", score: 0 },
+        ]
+      },
+      {
+        section: "资产转移",
+        q: "你的主要资产是否已转移到海外？",
+        options: [
+          { text: "资产全部在国内，无任何转移", score: 10 },
+          { text: "有小额海外投资，但主体在国内", score: 7 },
+          { text: "有较大额海外资产（不含美国）", score: 4 },
+          { text: "已将主要资产转移到美国账户", score: 0 },
+        ]
+      },
+      {
+        section: "行程安排",
+        q: "你的赴美行程计划详细程度如何？",
+        options: [
+          { text: "有往返机票+酒店预订+每日行程", score: 10 },
+          { text: "有大致行程，还未预订", score: 7 },
+          { text: "只知道目的城市，无详细计划", score: 4 },
+          { text: "没有具体行程安排", score: 1 },
+        ]
+      },
+      {
+        section: "日本/申根记录",
+        q: "你是否有日本或申根签证记录？",
+        options: [
+          { text: "有日本或申根签证，且无任何违规", score: 10 },
+          { text: "有签证但还未出行", score: 7 },
+          { text: "只有东南亚或港澳台记录", score: 4 },
+          { text: "从未去过发达国家", score: 2 },
+        ]
+      },
+      {
+        section: "敏感国家",
+        q: "过去5年是否去过敏感国家/地区？",
+        options: [
+          { text: "从未去过", score: 10 },
+          { text: "去过1个但有正当理由", score: 5 },
+          { text: "去过多个敏感国家", score: 2 },
+          { text: "在敏感国家有长期居住史", score: 0 },
+        ]
+      },
+      {
+        section: "国内约束力",
+        q: "你回国的最强约束力来自哪些方面？",
+        options: [
+          { text: "老伴在国内+房产+稳定退休金", score: 10 },
+          { text: "退休金稳定，有一定国内关系", score: 7 },
+          { text: "退休金不稳定，国内关系一般", score: 3 },
+          { text: "全家都在美国，只有你自己在申请", score: 0 },
+        ]
+      },
+      {
+        section: "DS-160",
+        q: "你的DS-160表格是否由你本人填写并核查？",
+        options: [
+          { text: "本人填写，内容完整真实", score: 10 },
+          { text: "中介填写，我已全部核对", score: 7 },
+          { text: "中介填写，我只看过大概", score: 3 },
+          { text: "找人代填，完全不清楚内容", score: 0 },
+        ]
+      },
+    ]
+  }
+};
+
+// ══════════════════════════════════════
+//  状态
+// ══════════════════════════════════════
+let currentAge = null;
+let currentPage = 'intro';
+let currentInfoStep = 0;
+let currentQIndex = 0;
+let answers = {};
+let totalScore = 0;
+
+const INFO_STEPS = [
+  {
+    q: "你的性别是？",
+    field: "sex",
+    options: [
+      { label: "男", value: "male" },
+      { label: "女", value: "female" },
+    ]
+  },
+  {
+    q: "你的婚姻状况？",
+    field: "marital",
+    options: [
+      { label: "未婚", value: "single" },
+      { label: "已婚", value: "married" },
+      { label: "离异", value: "divorced" },
+      { label: "丧偶", value: "widowed" },
+    ]
+  },
+  {
+    q: "你之前去过美国吗？",
+    field: "visited_us",
+    options: [
+      { label: "从未去过", value: "never" },
+      { label: "去过 1 次（已返回）", value: "once" },
+      { label: "去过 2 次以上", value: "multiple" },
+      { label: "有美国绿卡", value: "green_card" },
+    ]
+  },
+  {
+    q: "你的护照签发地是哪个城市？",
+    field: "passport_city",
+    options: [
+      { label: "北上广深等一线城市", value: "tier1" },
+      { label: "省会/强二线城市", value: "tier2" },
+      { label: "三线及以下城市/县城", value: "tier3" },
+      { label: "不清楚 / 护照遗失补办", value: "unknown" },
+    ]
+  },
+];
+
+// ══════════════════════════════════════
+//  路由
+// ══════════════════════════════════════
+function goPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  currentPage = name;
+
+  if (name === 'info') { renderInfo(); updateInfoProgress(); }
+  if (name === 'test') { renderQuestion(); updateQProgress(); }
+}
+
+// ══════════════════════════════════════
+//  年龄选择
+// ══════════════════════════════════════
+function selectAge(el, key) {
+  document.querySelectorAll('.age-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  currentAge = key;
+  document.getElementById('btn-age').disabled = false;
+}
+
+// ══════════════════════════════════════
+//  基本信息页
+// ══════════════════════════════════════
+function renderInfo() {
+  const step = INFO_STEPS[currentInfoStep];
+  const card = document.getElementById('info-card');
+  const answered = answers[step.field];
+  const buttons = step.options.map(opt => {
+    const sel = answered === opt.value;
+    return `<button class="option-btn${sel ? ' selected' : ''}" onclick="answerInfo('${step.field}','${opt.value}')">
+      <span class="option-dot"></span>
+      <span>${opt.label}</span>
+    </button>`;
+  }).join('');
+
+  card.innerHTML = `
+    <div class="question-meta">基本信息 ${currentInfoStep + 1} / ${INFO_STEPS.length}</div>
+    <div class="question-text">${step.q}</div>
+    <div class="option-list">${buttons}</div>
+    <div class="btn-row" style="margin-top:20px;">
+      ${currentInfoStep > 0 ? '<button class="btn-secondary" onclick="prevInfo()">← 上一步</button>' : ''}
+      <button class="btn-primary" id="info-next-btn" onclick="nextInfo()" disabled>下一步 →</button>
+    </div>
+  `;
+}
+
+function answerInfo(field, value) {
+  answers[field] = value;
+  renderInfo();
+  document.getElementById('info-next-btn').disabled = false;
+}
+
+function nextInfo() {
+  if (currentInfoStep < INFO_STEPS.length - 1) {
+    currentInfoStep++;
+    renderInfo();
+    updateInfoProgress();
+  } else {
+    currentQIndex = 0;
+    // 不要清空 answers（基本信息答案还要用来算分）
+    goPage('test');
+    renderQuestion();
+    updateQProgress();
+  }
+}
+
+function prevInfo() {
+  if (currentInfoStep > 0) {
+    currentInfoStep--;
+    renderInfo();
+    updateInfoProgress();
+  }
+}
+
+function updateInfoProgress() {
+  const pct = ((currentInfoStep + 1) / INFO_STEPS.length * 100).toFixed(0);
+  document.getElementById('progress-text').textContent = `${currentInfoStep + 1} / ${INFO_STEPS.length}`;
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+// ══════════════════════════════════════
+//  测试问题页
+// ══════════════════════════════════════
+function renderQuestion() {
+  const group = AGE_GROUPS[currentAge];
+  const qs = group.questions;
+  const q = qs[currentQIndex];
+  const card = document.getElementById('question-card');
+  const selected = answers['q_' + currentQIndex];
+
+  const buttons = q.options.map((opt, i) => {
+    return `<button class="option-btn${selected === i ? ' selected' : ''}" onclick="selectOption(${i})">
+      <span class="option-dot"></span>
+      <span>${opt.text}</span>
+    </button>`;
+  }).join('');
+
+  card.innerHTML = `
+    <div class="question-meta">${q.section}</div>
+    <div class="question-text">${q.q}</div>
+    <div class="option-list">${buttons}</div>
+    <div class="btn-row" style="margin-top:20px;">
+      ${currentQIndex > 0 ? '<button class="btn-secondary" onclick="prevQuestion()">← 上一题</button>' : ''}
+      ${currentQIndex < qs.length - 1
+        ? `<button class="btn-primary" id="q-next-btn" onclick="nextQuestion()" ${selected === undefined ? 'disabled' : ''}>下一题 →</button>`
+        : `<button class="btn-primary" id="q-next-btn" onclick="showResult()" ${selected === undefined ? 'disabled' : ''}>查看结果 →</button>`
+      }
+    </div>
+    <div style="text-align:center; margin-top:14px; font-size:12px; color:var(--text-light);">
+      ${currentQIndex + 1} / ${qs.length}
+    </div>
+  `;
+}
+
+function selectOption(i) {
+  answers['q_' + currentQIndex] = i;
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (currentQIndex < AGE_GROUPS[currentAge].questions.length - 1) {
+    currentQIndex++;
+    renderQuestion();
+    updateQProgress();
+  }
+}
+
+function prevQuestion() {
+  if (currentQIndex > 0) {
+    currentQIndex--;
+    renderQuestion();
+    updateQProgress();
+  }
+}
+
+function updateQProgress() {
+  const qs = AGE_GROUPS[currentAge].questions;
+  const pct = ((currentQIndex + 1) / qs.length * 100).toFixed(0);
+  document.getElementById('q-progress-text').textContent = `${currentQIndex + 1} / ${qs.length}`;
+  document.getElementById('q-progress-fill').style.width = pct + '%';
+}
+
+// ══════════════════════════════════════
+//  计算结果
+// ══════════════════════════════════════
+function calculateScore() {
+  const group = AGE_GROUPS[currentAge];
+  const qs = group.questions;
+  const w = group.weight;
+  const sectionScores = {};
+
+  let rawTotal = 0;
+  let maxTotal = 0;
+
+  qs.forEach((q, i) => {
+    const sel = answers['q_' + i];
+    const score = sel !== undefined ? q.options[sel].score : 0;
+    const max = Math.max(...q.options.map(o => o.score));
+    rawTotal += score;
+    maxTotal += max;
+    sectionScores[q.section] = { score, max };
+  });
+
+  // 加入基本信息bonus/penalty
+  let bonus = 0;
+  if (answers.sex === 'male') bonus += 2;
+  if (answers.visited_us === 'green_card') bonus -= 20;
+  if (answers.visited_us === 'never') bonus += 3;
+  if (answers.visited_us === 'multiple') bonus += 5;
+  if (answers.passport_city === 'tier1') bonus += 3;
+  if (answers.passport_city === 'tier3') bonus -= 2;
+  if (answers.marital === 'married') bonus += 5;
+
+  const pct = Math.max(5, Math.min(98, Math.round((rawTotal / maxTotal) * 100 + bonus)));
+  return { pct, rawTotal, maxTotal, sectionScores, bonus };
+}
+
+function showResult() {
+  goPage('result');
+  const { pct, sectionScores } = calculateScore();
+
+  // 分数环动画
+  setTimeout(() => {
+    const circle = document.getElementById('score-circle');
+    const circumference = 2 * Math.PI * 65; // ≈ 408
+    const offset = circumference - (pct / 100) * circumference;
+    circle.style.strokeDashoffset = offset;
+
+    // 颜色
+    circle.className = 'fg';
+    if (pct >= 75) circle.classList.add('');
+    else if (pct >= 50) circle.classList.add('warn');
+    else circle.classList.add('danger');
+  }, 100);
+
+  // 数字动画
+  animateNum('score-pct', pct, '%', 1200);
+
+  // 判决语
+  const verdict = document.getElementById('result-verdict');
+  let vtext = '', vcls = '';
+  if (pct >= 80) {
+    vtext = '✅ 通过率较高 — 材料齐全，约束力强！';
+    vcls = 'verdict-high';
+  } else if (pct >= 60) {
+    vtext = '⚠️ 通过率中等 — 需注意完善材料，规避风险点';
+    vcls = 'verdict-mid';
+  } else if (pct >= 40) {
+    vtext = '⚠️ 通过率偏低 — 存在明显风险，建议重点改进';
+    vcls = 'verdict-mid';
+  } else {
+    vtext = '🚨 通过率较低 — 高风险申请，建议找专业人士评估';
+    vcls = 'verdict-low';
+  }
+  verdict.className = 'result-verdict ' + vcls;
+  verdict.textContent = vtext;
+
+  // 分项评分
+  const breakdown = document.getElementById('score-breakdown');
+  breakdown.innerHTML = Object.entries(sectionScores).map(([sec, s]) => {
+    const pct2 = Math.round(s.score / s.max * 100);
+    const color = pct2 >= 80 ? '#27ae60' : pct2 >= 50 ? '#f39c12' : '#e74c3c';
+    return `<div style="margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;">
+        <span>${sec}</span>
+        <span style="font-weight:700;">${pct2}%</span>
+      </div>
+      <div style="height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden;">
+        <div style="height:100%;width:${pct2}%;background:${color};border-radius:3px;transition:width 1s;"></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // 建议
+  const tips = getTips(pct, sectionScores);
+  document.getElementById('tips-list').innerHTML = tips.map(t =>
+    `<div class="tip-item"><span class="tip-icon">${t.icon}</span><span>${t.text}</span></div>`
+  ).join('');
+}
+
+function animateNum(elId, target, suffix, duration) {
+  const el = document.getElementById(elId);
+  const start = 0;
+  const startTime = performance.now();
+  function step(now) {
+    const progress = Math.min((now - startTime) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.round(start + (target - start) * eased) + suffix;
+    if (progress < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+function getTips(pct, sectionScores) {
+  const tips = [];
+
+  if (pct < 75) tips.push({ icon: '📄', text: 'DS-160 表格务必真实、完整填写，所有工作经历不能有超过30天空档' });
+  if (pct < 75) tips.push({ icon: '💰', text: '准备好6个月银行流水、存款证明和房产证，资金来源要能说清楚' });
+  if (pct < 60) tips.push({ icon: '🎯', text: '提前准备面签常见问题（出行目的、行程安排、费用承担），答案要前后一致' });
+
+  const lowSections = Object.entries(sectionScores).filter(([,s]) => s.score / s.max < 0.6).map(([k]) => k);
+  if (lowSections.includes('旅行历史')) tips.push({ icon: '✈️', text: '建议先办理日本/申根签证，积累发达国家出行记录后再申请美签' });
+  if (lowSections.includes('家庭纽带') || lowSections.includes('国内约束')) tips.push({ icon: '🏠', text: '提供国内家庭、房产、退休金等强约束力证明，增加回国可信度' });
+  if (lowSections.includes('英语能力')) tips.push({ icon: '🗣️', text: '即使不会英语也可以用中文面签，但要对行程和目的非常清楚' });
+  if (lowSections.includes('拒签历史')) tips.push({ icon: '⚠️', text: '如有拒签记录，建议间隔6个月以上再申请，并附上解释信' });
+  if (lowSections.includes('DS-160 填写')) tips.push({ icon: '✅', text: 'DS-160 表格提交前务必打印确认页核查，内容与面签口述必须一致' });
+
+  tips.push({ icon: '📅', text: '预约面签前确保护照有效期超过6个月，照片符合要求（51×51mm白底数码）' });
+
+  return tips.slice(0, 5);
+}
+
+function resetTest() {
+  currentAge = null;
+  currentInfoStep = 0;
+  currentQIndex = 0;
+  answers = {};
+  totalScore = 0;
+  document.querySelectorAll('.age-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('btn-age').disabled = true;
+  document.getElementById('score-circle').style.strokeDashoffset = 408;
+  closeAiModal();
+  goPage('intro');
+}
+
+// ══════════════════════════════════════
+//  AI 深度分析
+// ══════════════════════════════════════
+function openAiModal() {
+  document.getElementById('ai-modal').style.display = 'flex';
+  document.getElementById('ai-result').style.display = 'none';
+  document.getElementById('ai-error').style.display = 'none';
+  document.getElementById('ai-loading').style.display = 'none';
+  document.getElementById('api-key-section').style.display = 'block';
+  document.getElementById('api-key-input').value = '';
+  document.getElementById('api-key-input').focus();
+}
+
+function closeAiModal() {
+  document.getElementById('ai-modal').style.display = 'none';
+}
+
+async function runAiAnalysis() {
+  document.getElementById('api-key-section').style.display = 'none';
+  document.getElementById('ai-loading').style.display = 'flex';
+  document.getElementById('ai-error').style.display = 'none';
+  document.getElementById('ai-result').style.display = 'none';
+
+  const group = AGE_GROUPS[currentAge];
+  const { pct, sectionScores } = calculateScore();
+
+  const infoMap = { sex: { male: '男', female: '女' }, marital: { single: '未婚', married: '已婚', divorced: '离异', widowed: '丧偶' }, visited_us: { never: '从未去过', once: '去过1次', multiple: '去过2次以上', green_card: '有美国绿卡' }, passport_city: { tier1: '一线城市', tier2: '省会城市', tier3: '三线及以下', unknown: '不清楚' } };
+  const basicInfo = `【基本信息】\n姓名/性别：${infoMap.sex[answers.sex] || '未填写'}\n婚姻：${infoMap.marital[answers.marital] || '未填写'}\n去过美国：${infoMap.visited_us[answers.visited_us] || '未填写'}\n护照签发地：${infoMap.passport_city[answers.passport_city] || '未填写'}\n年龄段：${group.name}`;
+
+  const sectionList = Object.entries(sectionScores).map(([sec, s]) => `  - ${sec}：${s.score}分（满分${s.max}分）`).join('\n');
+  const sectionInfo = `【分项得分】\n${sectionList}\n\n总分：${pct}%`;
+
+  const prompt = `你是一位专业的美国签证顾问，请根据以下申请人的答题数据，进行深度分析并给出个性化建议。
+
+${basicInfo}
+
+${sectionInfo}
+
+请输出一份详细的中文分析报告，结构如下：
+
+## 🔍 整体评估
+（简要说明该申请人的整体风险等级：高/中/低）
+
+## ⚠️ 高风险点
+（列出3-5个最需要关注的问题，每个问题用【风险描述 + 原因 + 建议做法】的格式）
+
+## ✅ 优势项
+（列出该申请人的强项，这些是面签时要主动展示的点）
+
+## 💡 面签策略
+（给出3-5条具体的面签应答技巧和注意事项，帮助申请人扬长避短）
+
+## 📋 材料清单
+（列出面签时最需要携带的3-5份关键材料）
+
+注意：分析要专业、具体，紧密结合该申请人的答题内容，不要泛泛而谈。`;
+
+  try {
+    // 调用 Vercel Serverless 代理（API Key 在服务端环境变量，前端不暴露）
+    const response = await fetch('/api/visa-analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt })
+    });
+
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData.error || `请求失败 (${response.status})`);
+    }
+
+    const data = await response.json();
+    const content = data.content || '未收到回复内容。';
+
+    document.getElementById('ai-loading').style.display = 'none';
+    const resultEl = document.getElementById('ai-result');
+    resultEl.innerHTML = content.replace(/\n/g, '<br>').replace(/## /g, '<h4>').replace(/##/g, '</h4>');
+    resultEl.style.display = 'block';
+
+  } catch (err) {
+    document.getElementById('ai-loading').style.display = 'none';
+    showAiError(err.message || '分析失败，请检查网络后重试。');
+    document.getElementById('api-key-section').style.display = 'block';
+  }
+}
+
+function showAiError(msg) {
+  const el = document.getElementById('ai-error');
+  el.textContent = '❌ ' + msg;
+  el.style.display = 'block';
+}
+
+// 点击遮罩层也可关闭
+document.addEventListener('click', function(e) {
+  const modal = document.getElementById('ai-modal');
+  if (e.target === modal) closeAiModal();
+});
+</script>
+</body>
+</html>
